@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    seatNo: {
+        type: DataTypes.INTEGER,
+        allowNull: false, 
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -41,6 +45,12 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Booking',
+    indexes: [
+        {
+            unique: true,
+            fields: ['seatNo', 'flightId'],
+        },
+    ],
   });
   return Booking;
 };
