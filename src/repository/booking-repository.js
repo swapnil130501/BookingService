@@ -4,9 +4,9 @@ const { Booking } = require('../models/index');
 const { AppError, ValidationError } = require('../utils/errors/index');
 
 class BookingRepository {
-    async create(data) {
+    async create(data, transaction) {
         try {
-            const booking = await Booking.create(data);
+            const booking = await Booking.create(data, {transaction: transaction});
             return booking;
         } catch (error) {
             if(error.name == 'SequelizeValidationError') {
@@ -19,22 +19,40 @@ class BookingRepository {
                 StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
-    async update(bookingId, data) {
+
+    async update(bookingId, data, transaction = null) {
         try {
-            const booking = await Booking.findByPk(bookingId);
-            if(data.status) {
-                booking.status = data.status;
+            const options = {};
+            if (transaction) {
+                options.transaction = transaction; // Attach transaction if provided
             }
-            await booking.save();
+    
+            const booking = await Booking.findByPk(bookingId, options); // Use transaction in `findByPk`
+            if (!booking) {
+                throw new AppError(
+                    'NotFoundError',
+                    'Booking Not Found',
+                    `Booking with ID ${bookingId} does not exist.`,
+                    StatusCodes.NOT_FOUND
+                );
+            }
+    
+            if (data.status) {
+                booking.status = data.status; // Update the status
+            }
+    
+            await booking.save({ transaction }); // Save with transaction
             return booking;
         } catch (error) {
             throw new AppError(
-                'RepositoryError', 
-                'Cannot update Booking', 
-                'There was some issue updating the booking, please try again later',
-                StatusCodes.INTERNAL_SERVER_ERROR);
+                'RepositoryError',
+                'Cannot Update Booking',
+                'There was some issue updating the booking, please try again later.',
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
         }
     }
+    
 }
 
 module.exports = BookingRepository;

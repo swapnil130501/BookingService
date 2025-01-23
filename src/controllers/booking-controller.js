@@ -9,9 +9,9 @@ const bookingService = new BookingService();
 
 class BookingController{
 
-    constructor(){
-        
+    constructor() {
     }
+
     async sendMessageToQueue(req, res){
          const channel = await createChannel();
          const payload  = {
@@ -28,6 +28,7 @@ class BookingController{
             message: 'Successfully published the message'
          });
     }
+
     async create (req, res){
         try {
             const response = await bookingService.createBooking(req.body);
@@ -39,7 +40,7 @@ class BookingController{
                 data: response
             });
         } catch (error) {
-            return res.status(error.statusCode).json({
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: error.message,
                 success: false,
                 err: error.explanation,
@@ -48,6 +49,5 @@ class BookingController{
         }
     }
 }
-
 
 module.exports = BookingController;
